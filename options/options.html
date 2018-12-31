@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+
+<!--
+  Tip Tab
+  A Firefox extension to manage and navigate the browser tabs.
+  Copyright (C) 2018  William Wong (williamw520@gmail.com)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre.min.css" />
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre-icons.min.css" />
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre-exp.min.css" />
+    <link rel="stylesheet" type="text/css" href="/options/options_ui.css" />
+    <link rel="icon" type="image/png" href="/icons/app-128.png" />
+    <title>Tip Tab Options</title>
+  </head>
+
+  <body>
+
+    <div id="optionsPanel" class="container" style="max-width:800px">
+
+      <div class="panel" style="margin-top:2vh; height:96vh;">
+
+        <div class="panel-header " style="padding-top:0.25rem; padding-bottom:0.25rem;">
+          <div class="d-flex">
+            <div class="flex-centered pr-2">
+              <figure class="avatar avatar-lg">
+                <img src="/icons/app-128.png">
+              </figure>
+            </div>
+            <div class="px-2 pb-1" >
+              <div class="h4">Tip Tab Settings</div>
+              <small class="h6">Manage and navigate the browser tabs.</small>
+            </div>
+          </div>
+        </div><!-- panel-header -->
+        
+        <nav class="panel-nav">
+          <ul class="tab tab-block">
+            <li class="tab-item" data-tabid="tab-general"><a href="#">General</a></li>
+            <li class="tab-item disabled" data-tabid="tab-dummy"><a href="#"></a></li>
+          </ul>
+        </nav><!-- panel-nav -->
+        
+        <div class="panel-body" style=" background: #fcfcfc;">
+
+          <!-- tab-general -->
+          <form class="form-horizontal tab-body hidden" id="tab-general">
+
+            <div class="divider text-left" data-content="Tab Operation" style="margin-top:1rem;"></div>
+
+            <div class="form-group ">
+              <div class="col-6 pr-2"> <label class="form-label" for="lazyTabLoadingOnRestore">Lazy tab loading when restoring a session</label> </div>
+              <div class="col-6">
+                <label class="form-switch "> <input type="checkbox" id="lazyTabLoadingOnRestore"> <i class="form-icon"></i> </label>
+              </div>
+            </div>
+
+            <div class="form-group ">
+              <div class="col-6 pr-2"> <label class="form-label" for="autoRestoreOnStartup">Auto restoring session on browser startup</label> </div>
+              <div class="col-6">
+                <label class="form-switch "> <input type="checkbox" id="autoRestoreOnStartup"> <i class="form-icon"></i> </label>
+              </div>
+            </div>
+
+            <div class="form-group ">
+              <div class="col-6 pr-2"> <label class="form-label" for="enableScheduleBackup">Enable Scheduled Backup</label> </div>
+              <div class="col-6">
+                <label class="form-switch "> <input type="checkbox" id="enableScheduleBackup"> <i class="form-icon"></i> </label>
+              </div>
+            </div>
+
+            <div class="form-group ">
+              <div class="col-6 pr-2"> <label class="form-label" for="enableOnChangeBackup">Enable On-Change Backup</label> </div>
+              <div class="col-6">
+                <label class="form-switch "> <input type="checkbox" id="enableOnChangeBackup"> <i class="form-icon"></i> </label>
+              </div>
+            </div>
+
+          </form><!-- tab-general -->
+
+        </div><!-- panel-body -->
+
+        <div class="panel-footer">
+          <button id="saveChanges" class="btn mx-2" style="padding-left: .8rem; padding-right: .8rem; ">Save Changes</button>
+          <button id="undoChanges" class="btn mx-2" style="padding-left: .8rem; padding-right: .8rem; ">Undo Changes</button>
+          <button id="resetToDefault" class="btn mx-2" style="padding-left: .8rem; padding-right: .8rem; ">Reset to Defaults</button>
+        </div><!-- panel-footer -->
+      </div><!-- panel -->
+      
+    </div><!-- panels -->
+
+    <script src="/pkg/jquery/jquery.min.js"></script>
+    <script src="/scripts/util/logger.js"></script>
+    <script src="/scripts/util/sbcfg.js"></script>
+    <script src="/scripts/util/app.js"></script>
+    <script src="/options/settings.js"></script>
+    <script src="/options/options_ui.js"></script>
+  </body>
+
+</html>

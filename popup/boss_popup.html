@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<!--
+  Session Boss
+  A Firefox extension to manage the browser tab sessions.
+  Copyright (C) 2018  William Wong (williamw520@gmail.com)
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre.min.css" />
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre-icons.min.css" />
+    <link rel="stylesheet" type="text/css" href="/pkg/spectre/spectre-exp.min.css" />
+    <link rel="stylesheet" type="text/css" href="/pkg/jqueryui/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="boss_popup.css"/>
+    <title>Session Boss</title>
+  </head>
+
+  <body style="width: 780px; height: 580px;"><!-- Firefox popup has max dimension of 800x600.  Smaller to allow for borders. -->
+
+    <div class="container" >
+
+      <div class="navbar" style="margin: .5rem 0 .4rem 0;" id="global-cmds">
+        <div class="navbar-section">
+          <div class="flex-centered pr-1">
+            <div class="logo logo-sm"><img src="/icons/app-128.png"></div>
+          </div>
+          <div class="h4 px-1 pb-1">Session Boss <span class="logo-version"></span></div>
+        </div>
+
+        <div class="navbar-section ">
+          <div class="mt-2">
+            <button class="cmd-undo-snapshot btn btn-link btn-cmd-i badge mr-4"
+                    title="Undo the user session change.  New changes after undo will be appended to the end of the change log.">
+              <i class="icon icon-back"></i>
+            </button>
+            <button class="cmd-redo-snapshot btn btn-link btn-cmd-i badge mr-4"
+                    title="Redo the user session change.">
+              <i class="icon icon-forward"></i>
+            </button>
+            <small class="text-gray" id="undo-msg"></small>
+          </div>
+        </div>
+
+        <div class="navbar-section nowrap" style="flex-grow: 0">
+          <div>
+            <button class="cmd-save-all     btn btn-action btn-cmd-i btn-lv1 mr-4" title="Capture all tabs in all windows as a new session">
+              <i class="icon icon-people"></i>
+            </button>
+            <button class="cmd-save-window  btn btn-action btn-cmd-i btn-lv1 mr-4" title="Capture the tabs of the current window as a new sesison">
+              <i class="icon icon-photo"></i>
+            </button>
+            <button class="cmd-backup-now   btn btn-action btn-cmd-i btn-lv1 mr-3" title="Back up the browser session as an on-change session now">
+              <i class="icon icon-location"></i>
+            </button>
+            <div class="dropdown dropdown-right" style="top: .1rem; margin-right: .6rem">
+              <div class="btn-group">
+                <a href="#" class="btn btn-link btn-dropdown dropdown-toggle" tabindex="0"><i class="icon icon-menu"></i></a>
+                <ul class="menu">
+                  <li class="menu-item"> <a href="#" class="cmd-preferences"><i class="icon icon-edit"></i>&nbsp; Preferences</a> </li>
+                  <li class="divider" data-content=""></li>
+                  <li class="menu-item"> <a href="#" class="cmd-del-all-user"><i class="icon icon-delete"></i>&nbsp; Delete User Sessions</a> </li>
+                  <li class="menu-item"> <a href="#" class="cmd-del-all-backup"><i class="icon icon-cross"></i>&nbsp; Delete Scheduled Backups</a> </li>
+                  <li class="menu-item"> <a href="#" class="cmd-del-all-onchange"><i class="icon icon-cross"></i>&nbsp; Delete On-Change Backups</a> </li>
+                  <li class="menu-item"> <a href="#" class="cmd-purge-all"><i class="icon icon-cross"></i>&nbsp; Purge All History/Data</a> </li>
+                  <li class="divider" data-content=""></li>
+                  <li class="menu-item"> <a href="#" class="cmd-clear-crash"><i class="icon icon-stop"></i>&nbsp; Clear Crash State</a> </li>
+                  <li class="divider" data-content=""></li>
+                  <li class="menu-item"> <a href="#" class="cmd-about"><i class="icon"></i>&nbsp; About</a> </li>
+<!--
+                  <li class="divider" data-content="Debug"></li>
+                  <li class="menu-item"> <a href="#" class="dbg-log-tabs">dump tabs</a> </li>
+                  <li class="menu-item"> <a href="#" class="dbg-test">test</a> </li>
+-->
+                </ul>
+              </div>
+            </div>          
+          </div>
+        </div>
+
+      </div>
+
+      <div id="empty-content" class="empty hidden" style="height:520px;">
+        <div class="empty-icon"> <i class="icon icon-message"></i> </div>
+        <p class="empty-title h5">No session saved yet.</p>
+        <p class="empty-subtitle">Click on Save All to save a session.</p>
+      </div>
+
+      <div id="main-content" class="main-content hidden">
+
+        <nav style="margin-bottom: .4rem;">
+          <ul class="tab" style="border-bottom: .05rem solid #b7b9bd;">
+            <li class="tab-item mw8 active" data-tab="all-sessions">
+              <a href="#" class="badge" data-badge="0"> All Sessions </a>
+            </li>
+            <li class="tab-item mw8" data-tab="user-sessions">
+              <a href="#" class="badge" data-badge="0" title="Sessions saved by user"> User Sessions </a>
+            </li>
+            <li class="tab-item mw9" data-tab="auto-sessions">
+              <a href="#" class="badge" data-badge="0" title="Sessions saved by the scheduled backup"> Scheduled Backup </a>
+            </li>
+            <li class="tab-item mw9" data-tab="onchange-sessions">
+              <a href="#" class="badge" data-badge="0" title="Sessions saved on change of the tabs"> On-Change Backup </a>
+            </li>
+          </ul>
+        </nav>
+        
+        <div id="all-sessions"      class="sessions-tab-content columns col-gapless">
+        </div>
+
+        <div id="user-sessions"     class="sessions-tab-content columns col-gapless">
+        </div>
+        
+        <div id="auto-sessions"     class="sessions-tab-content columns col-gapless">
+        </div>
+
+        <div id="onchange-sessions" class="sessions-tab-content columns col-gapless">
+        </div>
+
+      </div><!-- main-content -->
+
+    </div><!-- container -->
+
+
+    <div id="single-input-dlg" class="modal">
+      <div class="modal-container" role="document">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5 dlg-title">Title</div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.8rem;">
+          <div class="content">
+            <form>
+              <div class="form-group">
+                <label class="form-label input-label" for="input-value">Label</label>
+                <input class="form-input input-value" type="text">
+                <input class="input-context" type="hidden">
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn mw4 btn-primary modal-submit">Save</button>
+          <button class="btn mw4             modal-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="text-input2-dlg" class="modal">
+      <div class="modal-container" role="document">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5 dlg-title">Title</div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.5rem;">
+          <div class="content">
+            <form>
+              <div class="form-group">
+                <label      class="form-label  input-label1" for="input-value1">Label1</label>
+                <textarea   class="form-input  input-value1" rows="5"></textarea>
+                <label      class="form-label  input-label2 mt-2" for="input-value2">Label2</label>
+                <textarea   class="form-input  input-value2" rows="5"></textarea>
+                <input      class="input-context" type="hidden">
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn mw4 btn-primary modal-submit">Save</button>
+          <button class="btn mw4             modal-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="confirm-dlg" class="modal modal-sm">
+      <div class="modal-container" role="document" style="max-width: 400px;">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5  dlg-title">Confirmation</div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.8rem;">
+          <div class="content">
+            <form>
+              <div class="form-group">
+                <div class="text-msg" >(message)</div>
+                <input class="input-context" type="hidden">
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn mw4 btn-primary modal-submit">Save</button>
+          <button class="btn mw4             modal-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+    
+    <div id="text-dlg" class="modal">
+      <div class="modal-container" role="document">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5 dlg-title"></div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.8rem;">
+          <div class="content">
+            <form>
+              <div class="flex-centered">
+                <div class="text-msg" >(message)</div>
+                <input class="input-context" type="hidden">
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-link modal-submit mw4">Ok</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="session-name-dlg" class="modal">
+      <div class="modal-container" role="document">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5 dlg-title">Set Session Name</div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.8rem;">
+          <div class="content">
+            <form>
+              <div class="form-group">
+                <label class="form-label input-label" for="input-value">Session Name</label>
+                <input class="form-input input-value" type="text">
+              </div>
+              <div class="form-group" style="margin-top: 0.8rem;">
+                <div class="btn-group" >
+                  <button class="btn btn-cmd mw5 dlg-btn-datetime"  title="use the date and time to format the session name">Datetime</button>
+                  <button class="btn btn-cmd mw5 dlg-btn-title"     title="use the active window's title as the session name">Window Title</button>
+                </div>
+              </div>
+              <input class="input-context" type="hidden">
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn mw4 btn-primary modal-submit">Save</button>
+          <button class="btn mw4             modal-cancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="about-dlg" class="modal">
+      <div class="modal-container" role="document">
+        <div class="modal-header">
+          <a href="javascript:void(0)" class="btn btn-clear float-right  modal-close" aria-label="Close"></a>
+          <div class="modal-title h5 dlg-title">About the Extension</div>
+        </div>
+        <div class="modal-body" style="border-top:1px dotted gray; border-bottom:1px dotted gray; padding-bottom:1.8rem;">
+          <div class="content">
+            <form>
+              <div class="flex-centered">
+                <div class="text-msg" >
+                  <br>
+                  <center style="font-size:150%;"><b><span class="app-name">APP-NAME</span></b></center>
+                  <center>version: <span class="app-version">APP-VERSION</span></center>
+                  <center>Copyright 2018 <span class="app-author">APP-AUTHOR</span></center>
+                  <center>This software is licensed under the GPL 3 License.</center>
+                  <br>
+                  <center>The following 3rd party packages are used in this software:</center>
+                  <center>  jQuery, licensed under the MIT License</center>
+                  <center>  Spectre.css, licensed under the MIT License</center>
+                  <center>  Moment.js, licensed under the MIT License</center>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-link modal-submit mw4">Ok</button>
+        </div>
+      </div>
+    </div>
+    
+    <script src="/pkg/jquery/jquery.min.js"></script>
+    <script src="/pkg/jqueryui/jquery-ui.min.js"></script>
+    <script src="/pkg/moment-with-locales.js"></script>
+    <script src="/scripts/util/logger.js"></script>
+    <script src="/scripts/util/sbcfg.js"></script>
+    <script src="/scripts/util/app.js"></script>
+    <script src="/scripts/util/ringbuf.js"></script>
+    <script src="/scripts/util/dlg.js"></script>
+    <script src="/scripts/session.js"></script>
+    <script src="/scripts/sessiongroup.js"></script>
+    <script src="/scripts/sessions.js"></script>
+    <script src="boss_popup.js"></script>
+  </body>
+
+</html>

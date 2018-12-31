@@ -1,0 +1,78 @@
+{
+    "manifest_version": 2,
+    "name": "__MSG_extensionName__",
+    "description": "__MSG_extensionDescription__",    
+    "version": "2.0",
+    "author": "William Wong",
+    "default_locale": "en",
+
+    "applications": {
+        "gecko": {
+            "id": "sessionboss@william.wong",
+            "strict_min_version": "56.0"
+        }
+    },
+
+    "icons": {
+        "32": "icons/app-32.png",
+        "48": "icons/app-48.png",
+        "64": "icons/app-64.png",
+        "128": "icons/app-128.png"
+    },
+
+    "permissions": [
+        "*://*/*",
+        "<all_urls>",
+        "tabs",
+        "storage",
+        "cookies",
+        "alarms",
+        "contextualIdentities"
+    ],
+
+    "background": {
+        "scripts": [
+            "/pkg/moment-with-locales.js",
+            "/pkg/spark-md5.js",
+            "scripts/util/logger.js",
+            "scripts/util/sbcfg.js",
+            "scripts/util/app.js",
+            "scripts/util/ringbuf.js",
+            "options/settings.js",
+            "scripts/session.js",
+            "scripts/sessiongroup.js",
+            "scripts/sessions.js",
+            "scripts/boss_daemon.js"
+        ]
+    },
+
+    "browser_action": {
+        "default_icon": "icons/app-128.png",
+        "default_title": "Session Boss",
+        "default_popup": "popup/boss_popup.html",
+        "browser_style": false
+    },
+
+    "content_scripts": [
+        {
+            "js": [
+                "/pkg/jquery/jquery.min.js",
+                "scripts/util/logger.js",
+                "scripts/util/sbcfg.js",
+                "content_scripts/on_inject.js"
+            ],
+            "matches": ["*://*/*"],
+            "match_about_blank": true
+        }
+    ],
+    
+    "options_ui": {
+        "page": "options/options.html",
+        "browser_style": true,
+        "open_in_tab": true
+    },
+
+    "web_accessible_resources": [
+    ]
+
+}
